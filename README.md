@@ -3,9 +3,11 @@ Fontys EXPO project group 12
 
 < project description will be placed here >
 
+
 NOTE:
 
 We will only store the source files here, do not upload any library or other directories. Mainly we will work on main.cpp file.
+
 
 HOW TO USE GIT:
 
@@ -15,6 +17,7 @@ HOW TO USE GIT:
 4. From there others would be able to take the code and test it. When everybody approves the changes, they will be merged and the branch will be deleted.
 5. Every time when a branch is merged into 'master', developers have to do step 1 again to make sure they have a up-to-date version of the code.
 6. Files will be merged by Rob after everybody's approval and passed testing.
+
 
 IN CASE OF TROUBLE:
 
