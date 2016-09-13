@@ -14,9 +14,6 @@
 namespace pcl
 {
 	struct pcl::PointXYZ;
-	struct pcl::PointXYZI;
-	struct pcl::PointXYZRGB;
-	struct pcl::PointXYZRGBA;
 	template <typename T> class pcl::PointCloud;
 
 	template<class Interface>
@@ -57,45 +54,23 @@ namespace pcl
 		HRESULT result;
 		IKinectSensor* sensor;
 		ICoordinateMapper* mapper;
-		IColorFrameSource* colorSource;
-		IColorFrameReader* colorReader;
 		IDepthFrameSource* depthSource;
 		IDepthFrameReader* depthReader;
-		IInfraredFrameSource* infraredSource;
-		IInfraredFrameReader* infraredReader;
-
-		int colorWidth;
-		int colorHeight;
-		std::vector<RGBQUAD> colorBuffer;
 
 		int depthWidth;
 		int depthHeight;
 		std::vector<UINT16> depthBuffer;
-
-		int infraredWidth;
-		int infraredHeight;
-		std::vector<UINT16> infraredBuffer;
 	};
 
 	pcl::Kinect2Grabber::Kinect2Grabber()
 		: sensor(nullptr)
 		, mapper(nullptr)
-		, colorSource(nullptr)
-		, colorReader(nullptr)
 		, depthSource(nullptr)
 		, depthReader(nullptr)
-		, infraredSource(nullptr)
-		, infraredReader(nullptr)
 		, result(S_OK)
-		, colorWidth(0)
-		, colorHeight(0)
-		, colorBuffer()
-		, depthWidth(512)
-		, depthHeight(424)
+		, depthWidth( 1920 )
+		, depthHeight( 1080 )
 		, depthBuffer()
-		, infraredWidth(512)
-		, infraredHeight(424)
-		, infraredBuffer()
 		, running(false)
 		, quit(false)
 		, signal_PointXYZ(nullptr)
