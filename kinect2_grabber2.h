@@ -57,8 +57,8 @@ namespace pcl
 		IDepthFrameSource* depthSource;
 		IDepthFrameReader* depthReader;
 
-		int depthWidth;
-		int depthHeight;
+		int depthWidth = 160;
+		int depthHeight = 90;
 		std::vector<UINT16> depthBuffer;
 	};
 
@@ -68,8 +68,8 @@ namespace pcl
 		, depthSource(nullptr)
 		, depthReader(nullptr)
 		, result(S_OK)
-		, depthWidth( 1920 )
-		, depthHeight( 1080 )
+		, depthWidth( 160 )
+		, depthHeight( 90 )
 		, depthBuffer()
 		, running(false)
 		, quit(false)
