@@ -30,14 +30,11 @@ pcl::PointCloud<PointType>::Ptr extractClusters(pcl::PointCloud<PointType>::Ptr 
 	/* THIS IS WHERE THE FUN STARTS */
 	std::cout << "PointCloud before filtering has: " << cloud->points.size() << " data points." << std::endl; //*
 
-	// idk what it does
-	cloud->points.shrink_to_fit();
-	
 	// Create the filtering object: downsample the dataset using a leaf size of 1cm
 	pcl::VoxelGrid<PointType> vg;
 	pcl::PointCloud<PointType>::Ptr cloud_filtered(new pcl::PointCloud<PointType>);
 	vg.setInputCloud(cloud);
-	vg.setLeafSize(0.01f, 0.01f, 0.01f);
+	vg.setLeafSize(0.018f, 0.018f, 0.018f);
 	vg.filter(*cloud_filtered);
 	std::cout << "PointCloud after filtering has: " << cloud_filtered->points.size() << " data points." << std::endl; 
 
@@ -50,7 +47,7 @@ pcl::PointCloud<PointType>::Ptr extractClusters(pcl::PointCloud<PointType>::Ptr 
 	seg.setOptimizeCoefficients(true);
 	seg.setModelType(pcl::SACMODEL_PLANE);
 	seg.setMethodType(pcl::SAC_RANSAC);
-	seg.setMaxIterations(3);
+	seg.setMaxIterations(6);
 	seg.setDistanceThreshold(0.08);
 
 	int i = 0, nr_points = (int)cloud_filtered->points.size();
@@ -87,7 +84,7 @@ pcl::PointCloud<PointType>::Ptr extractClusters(pcl::PointCloud<PointType>::Ptr 
 	std::vector<pcl::PointIndices> cluster_indices;
 	pcl::EuclideanClusterExtraction<PointType> ec;
 	ec.setClusterTolerance(0.05);
-	ec.setMinClusterSize(300);
+	ec.setMinClusterSize(50);
 	ec.setMaxClusterSize(25000);
 	ec.setSearchMethod(tree);
 	ec.setInputCloud(cloud_filtered);
