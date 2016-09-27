@@ -25,7 +25,7 @@ typedef pcl::PointXYZ PointType;
 int objectsCount = 0; // number of objects
 
 /* Extract clusters and print objects count */
-pcl::PointCloud<PointType>::Ptr extractClusters(pcl::PointCloud<PointType>::Ptr cloud) {
+void extractClusters(pcl::PointCloud<PointType>::Ptr cloud) {
 	
 	/* THIS IS WHERE THE FUN STARTS */
 	std::cout << "PointCloud before filtering has: " << cloud->points.size() << " data points." << std::endl; //*
@@ -97,7 +97,6 @@ pcl::PointCloud<PointType>::Ptr extractClusters(pcl::PointCloud<PointType>::Ptr 
 	}
 
 	objectsCount = j;
-	return cloud;
 }
 
 int main(int argc, char* argv[])
