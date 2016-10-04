@@ -20,23 +20,38 @@
 
 #include <pcl/compression/octree_pointcloud_compression.h>
 
+#include <pcl/filters/passthrough.h>
+
 typedef pcl::PointXYZ PointType;
 
 int objectsCount = 0; // number of objects
+pcl::PointCloud<PointType>::Ptr cloud_filtered(new pcl::PointCloud<PointType>);
 
 /* Extract clusters and print objects count */
 void extractClusters(pcl::PointCloud<PointType>::Ptr cloud) {
-	
+
 	/* THIS IS WHERE THE FUN STARTS */
-	std::cout << "PointCloud before filtering has: " << cloud->points.size() << " data points." << std::endl; //*
+	std::cout << "PointCloud before clipping has: " << cloud->points.size() << " data points." << std::endl; //*
+
+	//clipping
+
+	pcl::PointCloud<PointType>::Ptr cloud_pass(new pcl::PointCloud<PointType>());
+	pcl::PassThrough<PointType> pass1;
+	pass1.setInputCloud(cloud);
+	pass1.setFilterFieldName("z");
+	pass1.setFilterLimits(0, 1); // reduces depth
+	pass1.filter(*cloud_pass);
+	std::cout << "PointCloud after clipping Z has: " << cloud_pass->points.size() << " data points." << std::endl;
 
 	// Create the filtering object: downsample the dataset using a leaf size of 1cm
 	pcl::VoxelGrid<PointType> vg;
-	pcl::PointCloud<PointType>::Ptr cloud_filtered(new pcl::PointCloud<PointType>);
-	vg.setInputCloud(cloud);
-	vg.setLeafSize(0.018f, 0.018f, 0.018f);
+	
+	vg.setInputCloud(cloud_pass);
+	vg.setLeafSize(0.04f, 0.04f, 0.04f);
+	std::cout << "T1" << std::endl;
 	vg.filter(*cloud_filtered);
-	std::cout << "PointCloud after filtering has: " << cloud_filtered->points.size() << " data points." << std::endl; 
+	std::cout << "T2" << std::endl;
+	std::cout << "PointCloud after filtering has: " << cloud_filtered->points.size() << " data points." << std::endl;
 
 	// Create the segmentation object for the planar model and set all the parameters
 	pcl::SACSegmentation<pcl::PointXYZ> seg;
@@ -45,37 +60,10 @@ void extractClusters(pcl::PointCloud<PointType>::Ptr cloud) {
 	pcl::PointCloud<PointType>::Ptr cloud_plane(new pcl::PointCloud<PointType>());
 	pcl::PCDWriter writer;
 	seg.setOptimizeCoefficients(true);
-	seg.setModelType(pcl::SACMODEL_PLANE);
+	seg.setModelType(pcl::SACMODEL_TORUS);
 	seg.setMethodType(pcl::SAC_RANSAC);
-	seg.setMaxIterations(6);
-	seg.setDistanceThreshold(0.08);
-
-	int i = 0, nr_points = (int)cloud_filtered->points.size();
-	while (cloud_filtered->points.size() > 0.1 * nr_points)
-	{
-		// Segment the largest planar component from the remaining cloud
-		seg.setInputCloud(cloud_filtered);
-		seg.segment(*inliers, *coefficients);
-		if (inliers->indices.size() == 0)
-		{
-			std::cout << "Could not estimate a planar model for the given dataset." << std::endl;
-			break;
-		}
-
-		// Extract the planar inliers from the input cloud
-		pcl::ExtractIndices<PointType> extract;
-		extract.setInputCloud(cloud_filtered);
-		extract.setIndices(inliers);
-		extract.setNegative(false);
-
-		// Get the points associated with the planar surface
-		extract.filter(*cloud_plane);
-
-		// Remove the planar inliers, extract the rest
-		extract.setNegative(true);
-		extract.filter(*cloud);
-		*cloud_filtered = *cloud;
-	}
+	seg.setMaxIterations(10);
+	seg.setDistanceThreshold(0.01);
 
 	// Creating the KdTree object for the search method of the extraction
 	pcl::search::KdTree<PointType>::Ptr tree(new pcl::search::KdTree<PointType>);
@@ -84,7 +72,7 @@ void extractClusters(pcl::PointCloud<PointType>::Ptr cloud) {
 	std::vector<pcl::PointIndices> cluster_indices;
 	pcl::EuclideanClusterExtraction<PointType> ec;
 	ec.setClusterTolerance(0.05);
-	ec.setMinClusterSize(50);
+	ec.setMinClusterSize(100);
 	ec.setMaxClusterSize(25000);
 	ec.setSearchMethod(tree);
 	ec.setInputCloud(cloud_filtered);
@@ -122,7 +110,7 @@ int main(int argc, char* argv[])
 		cloud = ptr->makeShared();
 
 		// Extracting the clusters and changing the cloud object
-		extractClusters(cloud);	
+		extractClusters(cloud);
 	};
 
 	// Kinect2Grabber
@@ -141,9 +129,9 @@ int main(int argc, char* argv[])
 		boost::mutex::scoped_try_lock lock(mutex);
 		if (lock.owns_lock() && cloud) {
 			// Update Point Cloud
-		
-			if (!viewer->updatePointCloud(cloud, "cloud")) {
-				viewer->addPointCloud(cloud, "cloud");
+
+			if (!viewer->updatePointCloud(cloud_filtered, "cloud")) {
+				viewer->addPointCloud(cloud_filtered, "cloud");
 			}
 
 			// Updating label with number of objects (lower left corner)
