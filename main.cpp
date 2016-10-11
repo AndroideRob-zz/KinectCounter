@@ -39,31 +39,18 @@ void extractClusters(pcl::PointCloud<PointType>::Ptr cloud) {
 	pcl::PassThrough<PointType> pass1;
 	pass1.setInputCloud(cloud);
 	pass1.setFilterFieldName("z");
-	pass1.setFilterLimits(0, 1); // reduces depth
+	pass1.setFilterLimits(0, 1.2); // reduces depth
 	pass1.filter(*cloud_pass);
 	std::cout << "PointCloud after clipping Z has: " << cloud_pass->points.size() << " data points." << std::endl;
 
-	// Create the filtering object: downsample the dataset using a leaf size of 1cm
+	// Create the filtering object: downsample the dataset using a leaf size of 1cm5*
 	pcl::VoxelGrid<PointType> vg;
 	
 	vg.setInputCloud(cloud_pass);
 	vg.setLeafSize(0.04f, 0.04f, 0.04f);
-	std::cout << "T1" << std::endl;
 	vg.filter(*cloud_filtered);
-	std::cout << "T2" << std::endl;
 	std::cout << "PointCloud after filtering has: " << cloud_filtered->points.size() << " data points." << std::endl;
 
-	// Create the segmentation object for the planar model and set all the parameters
-	pcl::SACSegmentation<pcl::PointXYZ> seg;
-	pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
-	pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
-	pcl::PointCloud<PointType>::Ptr cloud_plane(new pcl::PointCloud<PointType>());
-	pcl::PCDWriter writer;
-	seg.setOptimizeCoefficients(true);
-	seg.setModelType(pcl::SACMODEL_TORUS);
-	seg.setMethodType(pcl::SAC_RANSAC);
-	seg.setMaxIterations(10);
-	seg.setDistanceThreshold(0.01);
 
 	// Creating the KdTree object for the search method of the extraction
 	pcl::search::KdTree<PointType>::Ptr tree(new pcl::search::KdTree<PointType>);
@@ -72,7 +59,7 @@ void extractClusters(pcl::PointCloud<PointType>::Ptr cloud) {
 	std::vector<pcl::PointIndices> cluster_indices;
 	pcl::EuclideanClusterExtraction<PointType> ec;
 	ec.setClusterTolerance(0.05);
-	ec.setMinClusterSize(100);
+	ec.setMinClusterSize(50);
 	ec.setMaxClusterSize(25000);
 	ec.setSearchMethod(tree);
 	ec.setInputCloud(cloud_filtered);
@@ -94,6 +81,7 @@ int main(int argc, char* argv[])
 	boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(
 		new pcl::visualization::PCLVisualizer("Point Cloud Viewer"));
 	viewer->setCameraPosition(0.0, 0.0, -2.5, 0.0, 0.0, 0.0);
+	viewer->setShowFPS(false);
 
 	// Point Cloud
 	pcl::PointCloud<PointType>::Ptr cloud;
@@ -135,8 +123,8 @@ int main(int argc, char* argv[])
 			}
 
 			// Updating label with number of objects (lower left corner)
-			if (!viewer->updateText("Objects on screen: " + std::to_string(objectsCount), 20, 20, "textId")) {
-				viewer->addText("Objects on screen: " + std::to_string(objectsCount), 20, 20, "textId");
+			if (!viewer->updateText("Objects on screen: " + std::to_string(objectsCount), 20, 20, 20, 1, 1, 1, "textId")) {
+				viewer->addText("Objects on screen: " + std::to_string(objectsCount), 20, 20, 20, 1, 1, 1, "textId");
 			}
 		}
 	}
