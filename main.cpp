@@ -34,7 +34,7 @@ struct Object {
 // Tracking: maximum distance from object's position in the previous frame
 const int RECOGNITION_DISTANCE_THRESHOLD = 0.15;
 // Tracking: allocating memory for objects
-Object objects[100];
+Object objects[10];
 // Counting: used to display the number of people
 int objectsCount = 0; // number of objects
 // Clustering: final point cloud pointer is assigned to this variable
