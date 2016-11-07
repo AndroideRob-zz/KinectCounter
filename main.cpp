@@ -33,8 +33,10 @@ struct Object {
 
 // Tracking: maximum distance from object's position in the previous frame
 const int RECOGNITION_DISTANCE_THRESHOLD = 0.15;
+// Tracking: maximum number of objects on the screen at once
+const int MAX_OBJECTS = 10;
 // Tracking: allocating memory for objects
-Object objects[10];
+Object objects[MAX_OBJECTS];
 // Counting: used to display the number of people
 int objectsCount = 0; // number of objects
 // Clustering: final point cloud pointer is assigned to this variable
@@ -59,7 +61,7 @@ pcl::PointXY getCentroid(pcl::PointCloud<PointType>::Ptr cloud) {
 
 /* Tracking: retrieve an id of the object from a previous frame or generate a random id */
 int getObjectId(pcl::PointXY centroid) {
-	for (int i = 0; i < sizeof(objects); i++) {
+	for (int i = 0; i < MAX_OBJECTS); i++) {
 		if (objects[i].id != NULL) {
 			if (abs(objects[i].coords.x - centroid.x) < RECOGNITION_DISTANCE_THRESHOLD && abs(objects[i].coords.y - centroid.y) < RECOGNITION_DISTANCE_THRESHOLD) {
 				return objects[i].id;
