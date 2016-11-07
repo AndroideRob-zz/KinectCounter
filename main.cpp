@@ -26,20 +26,20 @@
 
 typedef pcl::PointXYZ PointType;
 
-struct Object {
+typedef struct Object {
 	int id;
 	pcl::PointXY coords;
 };
 
 // Tracking: maximum distance from object's position in the previous frame
-const int RECOGNITION_DISTANCE_THRESHOLD = 0.15;
+const double RECOGNITION_DISTANCE_THRESHOLD = 0.15;
 // Tracking: maximum number of objects on the screen at once
 const int MAX_OBJECTS = 10;
 // Tracking: allocating memory for objects
 Object objects[MAX_OBJECTS];
 // Counting: used to display the number of people
 int objectsCount = 0; // number of objects
-// Clustering: final point cloud pointer is assigned to this variable
+					  // Clustering: final point cloud pointer is assigned to this variable
 pcl::PointCloud<PointType>::Ptr cloud_filtered(new pcl::PointCloud<PointType>);
 
 /* Tracking: get a center point of a point cloud */
@@ -55,21 +55,21 @@ pcl::PointXY getCentroid(pcl::PointCloud<PointType>::Ptr cloud) {
 	pcl::PointXY point;
 	point.x = x / size;
 	point.y = y / size;
-	
+
 	return point;
 }
 
 /* Tracking: retrieve an id of the object from a previous frame or generate a random id */
 int getObjectId(pcl::PointXY centroid) {
-	for (int i = 0; i < MAX_OBJECTS); i++) {
-		if (objects[i].id != NULL) {
+	for (int i = 0; i < MAX_OBJECTS; i++) {
+		if (objects[i].id > -1) {
 			if (abs(objects[i].coords.x - centroid.x) < RECOGNITION_DISTANCE_THRESHOLD && abs(objects[i].coords.y - centroid.y) < RECOGNITION_DISTANCE_THRESHOLD) {
 				return objects[i].id;
 			}
 		}
 	}
 
-	return (int) rand() & 10000;
+	return (int)rand() & 10000;
 }
 
 /* Create an instance of Object from point cloud */
@@ -131,10 +131,20 @@ void extractClusters(pcl::PointCloud<PointType>::Ptr cloud) {
 
 		Object obj = createObjectFromCloud(cloud_cluster);
 
-		objects[objectsCount] = obj;
+		newObjects[objectsCount] = obj;
 		objectsCount++;
+	}
 
-		cout << "Object " << obj.id << "    pos: " << obj.coords << endl;
+	for (int i = 0; i < MAX_OBJECTS; i++) {
+		objects[i].id = -1;
+
+		if (newObjects[i].id > 0) {
+			objects[i] = newObjects[i];
+		}
+
+		if (objects[i].id != -1) {
+			cout << "new Object " << objects[i].id << "    pos: " << objects[i].coords << endl;
+		}
 	}
 
 	cout << "-----------" << endl;
@@ -180,7 +190,7 @@ int main(int argc, char* argv[]) {
 
 		boost::mutex::scoped_try_lock lock(mutex);
 		if (lock.owns_lock() && cloud) {
-			
+
 			// Update Point Cloud
 			if (!viewer->updatePointCloud(cloud_filtered, "cloud")) {
 				viewer->addPointCloud(cloud_filtered, "cloud");
