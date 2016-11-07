@@ -31,6 +31,7 @@ struct Object {
 	pcl::PointXY coords;
 };
 
+const int RECOGNITION_DISTANCE_THRESHOLD = 0.15;
 Object objects[100];
 int objectsCount = 0; // number of objects
 pcl::PointCloud<PointType>::Ptr cloud_filtered(new pcl::PointCloud<PointType>);
@@ -54,7 +55,7 @@ pcl::PointXY getCentroid(pcl::PointCloud<PointType>::Ptr cloud) {
 int getObjectId(pcl::PointXY centroid) {
 	for (int i = 0; i < sizeof(objects); i++) {
 		if (objects[i].id != NULL) {
-			if (abs(objects[i].coords.x - centroid.x) < 0.15 && abs(objects[i].coords.y - centroid.y) < 0.15) {
+			if (abs(objects[i].coords.x - centroid.x) < RECOGNITION_DISTANCE_THRESHOLD && abs(objects[i].coords.y - centroid.y) < RECOGNITION_DISTANCE_THRESHOLD) {
 				return objects[i].id;
 			}
 		}
