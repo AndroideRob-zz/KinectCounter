@@ -120,7 +120,7 @@ void extractClusters(pcl::PointCloud<PointType>::Ptr cloud) {
 	ec.extract(cluster_indices);
 
 	objectsCount = 0;
-	Object newObjects[100];
+	Object newObjects[MAX_OBJECTS];
 	for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin(); it != cluster_indices.end(); ++it) {
 		pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_cluster(new pcl::PointCloud<pcl::PointXYZ>);
 		for (std::vector<int>::const_iterator pit = it->indices.begin(); pit != it->indices.end(); ++pit)
