@@ -31,12 +31,16 @@ struct Object {
 	pcl::PointXY coords;
 };
 
+// Tracking: maximum distance from object's position in the previous frame
 const int RECOGNITION_DISTANCE_THRESHOLD = 0.15;
+// Tracking: allocating memory for objects
 Object objects[100];
+// Counting: used to display the number of people
 int objectsCount = 0; // number of objects
+// Clustering: final point cloud pointer is assigned to this variable
 pcl::PointCloud<PointType>::Ptr cloud_filtered(new pcl::PointCloud<PointType>);
 
-/* Get a center point of a point cloud */
+/* Tracking: get a center point of a point cloud */
 pcl::PointXY getCentroid(pcl::PointCloud<PointType>::Ptr cloud) {
 	float x = 0, y = 0;
 	int size = cloud->points.size();
@@ -49,9 +53,11 @@ pcl::PointXY getCentroid(pcl::PointCloud<PointType>::Ptr cloud) {
 	pcl::PointXY point;
 	point.x = x / size;
 	point.y = y / size;
+	
 	return point;
 }
 
+/* Tracking: retrieve an id of the object from a previous frame or generate a random id */
 int getObjectId(pcl::PointXY centroid) {
 	for (int i = 0; i < sizeof(objects); i++) {
 		if (objects[i].id != NULL) {
@@ -172,8 +178,8 @@ int main(int argc, char* argv[]) {
 
 		boost::mutex::scoped_try_lock lock(mutex);
 		if (lock.owns_lock() && cloud) {
+			
 			// Update Point Cloud
-
 			if (!viewer->updatePointCloud(cloud_filtered, "cloud")) {
 				viewer->addPointCloud(cloud_filtered, "cloud");
 			}
