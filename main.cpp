@@ -31,6 +31,12 @@ typedef struct Object {
 	pcl::PointXY coords;
 };
 
+// States of buttons
+typedef enum { RELEASED, UP, DOWN } State;
+State state = RELEASED;
+State oldstate = RELEASED;
+// Distance at which the background is subtracted
+float dist = 1;
 // Tracking: maximum distance from object's position in the previous frame
 const double RECOGNITION_DISTANCE_THRESHOLD = 0.15;
 // Tracking: maximum number of objects on the screen at once
@@ -39,7 +45,7 @@ const int MAX_OBJECTS = 10;
 Object objects[MAX_OBJECTS];
 // Counting: used to display the number of people
 int objectsCount = 0; // number of objects
-					  // Clustering: final point cloud pointer is assigned to this variable
+// Clustering: final point cloud pointer is assigned to this variable
 pcl::PointCloud<PointType>::Ptr cloud_filtered(new pcl::PointCloud<PointType>);
 
 /* Tracking: get a center point of a point cloud */
@@ -94,7 +100,7 @@ void extractClusters(pcl::PointCloud<PointType>::Ptr cloud) {
 	pcl::PassThrough<PointType> pass1;
 	pass1.setInputCloud(cloud);
 	pass1.setFilterFieldName("z");
-	pass1.setFilterLimits(0, 1.2); // reduces depth
+	pass1.setFilterLimits(0, dist); // reduces depth
 	pass1.filter(*cloud_pass);
 	// std::cout << "PointCloud after clipping Z has: " << cloud_pass->points.size() << " data points." << std::endl;
 
@@ -156,6 +162,7 @@ int main(int argc, char* argv[]) {
 		new pcl::visualization::PCLVisualizer("Point Cloud Viewer"));
 	viewer->setCameraPosition(0.0, 0.0, -2.5, 0.0, 0.0, 0.0);
 	viewer->setShowFPS(false);
+	viewer->setSize(640, 480);
 
 	// Point Cloud
 	pcl::PointCloud<PointType>::Ptr cloud;
@@ -197,8 +204,48 @@ int main(int argc, char* argv[]) {
 			}
 
 			// Updating label with number of objects (lower left corner)
-			if (!viewer->updateText("Objects on screen: " + std::to_string(objectsCount), 20, 20, 20, 1, 1, 1, "textId")) {
-				viewer->addText("Objects on screen: " + std::to_string(objectsCount), 20, 20, 20, 1, 1, 1, "textId");
+			if (!viewer->updateText("Objects on screen: " + std::to_string(objectsCount) + "\nMax distance: " + std::to_string(dist) + "m", 20, 20, 20, 1, 1, 1, "textId")) {
+				viewer->addText("Objects on screen: " + std::to_string(objectsCount) + "\nMax distance: " + std::to_string(dist) + "m", 20, 20, 20, 1, 1, 1, "textId");
+			}
+
+			// Updating label with number of objects (lower left corner)
+			if (!viewer->updateText("id: " + std::to_string(objects[0].id), 20, 60, 14, 1, 1, 0, "1")) {
+				viewer->addText("id: " + std::to_string(objects[0].id), 20, 60, 14, 1, 1, 0, "1");
+			}
+		}
+
+		// Setting max distance
+		switch (state) {
+		case RELEASED:
+			if (GetKeyState(VK_UP) < 0) {
+				state = UP;
+			}
+			else if (GetKeyState(VK_DOWN) < 0) {
+				state = DOWN;
+			}
+			break;
+		case UP:
+			if ((GetKeyState(VK_UP) < 0) == false) {
+				state = RELEASED;
+			}
+			break;
+		case DOWN:
+			if ((GetKeyState(VK_DOWN) < 0) == false) {
+				state = RELEASED;
+			}
+			break;
+		}
+		if (state != oldstate) {
+			oldstate = state;
+			switch (state) {
+			case UP:
+				dist = dist + 0.1;
+				break;
+			case DOWN:
+				if (dist > 0.5) {
+					dist = dist - 0.1;
+				}
+				break;
 			}
 		}
 	}
