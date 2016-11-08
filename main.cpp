@@ -144,11 +144,8 @@ void extractClusters(pcl::PointCloud<PointType>::Ptr cloud) {
 	for (int i = 0; i < MAX_OBJECTS; i++) {
 		objects[i].id = -1;
 
-		if (newObjects[i].id > 0) {
+		if (newObjects[i].id > -1) {
 			objects[i] = newObjects[i];
-		}
-
-		if (objects[i].id != -1) {
 			cout << "new Object " << objects[i].id << "    pos: " << objects[i].coords << endl;
 		}
 	}
@@ -198,6 +195,8 @@ int main(int argc, char* argv[]) {
 		boost::mutex::scoped_try_lock lock(mutex);
 		if (lock.owns_lock() && cloud) {
 
+			viewer->removeAllShapes();
+
 			// Update Point Cloud
 			if (!viewer->updatePointCloud(cloud_filtered, "cloud")) {
 				viewer->addPointCloud(cloud_filtered, "cloud");
@@ -208,9 +207,27 @@ int main(int argc, char* argv[]) {
 				viewer->addText("Objects on screen: " + std::to_string(objectsCount) + "\nMax distance: " + std::to_string(dist) + "m", 20, 20, 20, 1, 1, 1, "textId");
 			}
 
-			// Updating label with number of objects (lower left corner)
-			if (!viewer->updateText("id: " + std::to_string(objects[0].id), 20, 60, 14, 1, 1, 0, "1")) {
-				viewer->addText("id: " + std::to_string(objects[0].id), 20, 60, 14, 1, 1, 0, "1");
+			for (int i = 0; i < MAX_OBJECTS; i++) {
+				Object obj = objects[i];
+				pcl::PointXY coords = obj.coords;
+
+				float x = coords.x * -1;
+				float y = coords.y;
+
+				x += (0.65);
+				y += (0.55);
+
+				x *= 280;
+				y *= 240;
+
+				x += 120;
+				y += 100;
+
+				string id = obj.id > -1 ? std::to_string(obj.id) : "";
+
+				if (!viewer->updateText(id, x, y, 14, 1, 1, 0, std::to_string(i))) {
+					viewer->addText(id, x, y, 14, 1, 1, 0, std::to_string(i));
+				}
 			}
 		}
 
@@ -239,7 +256,9 @@ int main(int argc, char* argv[]) {
 			oldstate = state;
 			switch (state) {
 			case UP:
-				dist = dist + 0.1;
+				if (dist < 3) {
+					dist = dist + 0.1;
+				}
 				break;
 			case DOWN:
 				if (dist > 0.5) {
