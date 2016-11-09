@@ -229,7 +229,7 @@ int main(int argc, char* argv[]) {
 			}
 		}
 
-		// Setting max distance
+		// Setting max distance (after this distance, points will be erased)
 		switch (state) {
 		case RELEASED:
 			if (GetKeyState(VK_UP) < 0) {
