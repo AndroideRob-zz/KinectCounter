@@ -207,19 +207,22 @@ int main(int argc, char* argv[]) {
 				viewer->addText("Objects on screen: " + std::to_string(objectsCount) + "\nMax distance: " + std::to_string(dist) + "m", 20, 20, 20, 1, 1, 1, "textId");
 			}
 
+			// Iterating over objects
 			for (int i = 0; i < MAX_OBJECTS; i++) {
 				Object obj = objects[i];
 				pcl::PointXY coords = obj.coords;
 
+				// Adjusting object's coordinates to meet windows coordinates system
 				float x = coords.x * -1;
 				float y = coords.y;
 
-				x = (x+0.65)*420+360;
-				y = (y+0.55)*400+140;
+				x = (x + 0.65) * 420 + 360;
+				y = (y + 0.55) * 400 + 140;
 
-
+				// Converting object's id to a string
 				string id = obj.id > -1 ? std::to_string(obj.id) : "";
 
+				// Updating object's id label
 				if (!viewer->updateText(id, x, y, 14, 1, 1, 0, std::to_string(i))) {
 					viewer->addText(id, x, y, 14, 1, 1, 0, std::to_string(i));
 				}
