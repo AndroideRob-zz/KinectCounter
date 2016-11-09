@@ -159,7 +159,7 @@ int main(int argc, char* argv[]) {
 		new pcl::visualization::PCLVisualizer("Point Cloud Viewer"));
 	viewer->setCameraPosition(0.0, 0.0, -2.5, 0.0, 0.0, 0.0);
 	viewer->setShowFPS(false);
-	viewer->setSize(640, 480);
+	viewer->setSize(1280, 720);
 
 	// Point Cloud
 	pcl::PointCloud<PointType>::Ptr cloud;
@@ -214,14 +214,9 @@ int main(int argc, char* argv[]) {
 				float x = coords.x * -1;
 				float y = coords.y;
 
-				x += (0.65);
-				y += (0.55);
+				x = (x+0.65)*420+360;
+				y = (y+0.55)*400+140;
 
-				x *= 280;
-				y *= 240;
-
-				x += 120;
-				y += 100;
 
 				string id = obj.id > -1 ? std::to_string(obj.id) : "";
 
