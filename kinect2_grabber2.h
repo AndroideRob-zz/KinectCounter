@@ -244,4 +244,3 @@ namespace pcl
 }
 
 #endif KINECT2_GRABBER
-
